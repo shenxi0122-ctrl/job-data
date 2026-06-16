@@ -20,7 +20,7 @@ def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     coef = pd.read_csv(COEF_FILE, encoding="utf-8-sig")
 
     df["发布时间"] = pd.to_datetime(df["发布时间"], errors="coerce")
-    df["年月"] = df["发布时间"].dt.strftime("%Y‑%m")
+    df["年月"] = df["发布时间"].dt.strftime("%Y-%m")
     df["平均薪资"] = pd.to_numeric(df["平均薪资"], errors="coerce")
     df["技能数量"] = df["技能关键词"].fillna("").astype(str).apply(
         lambda s: 0 if not s.strip() else len([x for x in s.split("、") if x.strip()])
@@ -99,8 +99,11 @@ col3.metric("平均薪资中位数", f"{valid_salary.median():,.0f}" if not vali
 col4.metric("预警条数", f"{len(alerts):,}")
 
 st.subheader("一、招聘趋势")
-monthly_df = filtered.groupby("年月", dropna=False)[["jobid", "平均薪资"]].agg({"jobid":"count","平均薪资":"mean"})
-monthly_df = monthly_df.rename(columns={"jobid": "招聘数量"}).reset_index()
+# 彻底兼容新版Pandas 2.2+ 绝对不报错写法
+monthly_df = filtered.groupby("年月", dropna=False).agg(
+    招聘数量=("jobid", "count"),
+    平均薪资=("平均薪资", "mean")
+).reset_index()
 monthly_df = monthly_df.sort_values("年月")
 
 trend = go.Figure()
