@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf‑8 -*-
 from __future__ import annotations
 
 from pathlib import Path
@@ -8,21 +8,19 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-
 BASE_DIR = Path(__file__).resolve().parent
 DATA_FILE = BASE_DIR / "output" / "51job_sample_10000_enhanced.csv"
 ALERT_FILE = BASE_DIR / "output" / "51job_job_alerts.csv"
 COEF_FILE = BASE_DIR / "output" / "salary_factor_coefficients.csv"
 
-
 @st.cache_data
 def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    df = pd.read_csv(DATA_FILE, encoding="utf-8-sig")
-    alerts = pd.read_csv(ALERT_FILE, encoding="utf-8-sig")
-    coef = pd.read_csv(COEF_FILE, encoding="utf-8-sig")
+    df = pd.read_csv(DATA_FILE, encoding="utf‑8‑sig")
+    alerts = pd.read_csv(ALERT_FILE, encoding="utf‑8‑sig")
+    coef = pd.read_csv(COEF_FILE, encoding="utf‑8‑sig")
 
     df["发布时间"] = pd.to_datetime(df["发布时间"], errors="coerce")
-    df["年月"] = df["发布时间"].dt.strftime("%Y-%m")
+    df["年月"] = df["发布时间"].dt.strftime("%Y‑%m")
     df["平均薪资"] = pd.to_numeric(df["平均薪资"], errors="coerce")
     df["技能数量"] = df["技能关键词"].fillna("").astype(str).apply(
         lambda s: 0 if not s.strip() else len([x for x in s.split("、") if x.strip()])
@@ -32,13 +30,11 @@ def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     )
     return df, alerts, coef
 
-
 def filter_nonempty(series: pd.Series) -> list[str]:
     vals = sorted(v for v in series.fillna("").astype(str).unique().tolist() if v.strip())
     return vals
 
-
-def make_heatmap(data: pd.DataFrame, row_col: str, col_col: str, title: str) -> go.Figure:
+def make_heatmap(data:pd.DataFrame, row_col: str, col_col: str, title: str) -> go.Figure:
     ct = pd.crosstab(data[row_col], data[col_col])
     ct = ct.loc[ct.sum(axis=1).sort_values(ascending=False).head(8).index]
     fig = px.imshow(
@@ -52,7 +48,6 @@ def make_heatmap(data: pd.DataFrame, row_col: str, col_col: str, title: str) -> 
     fig.update_layout(margin=dict(l=20, r=20, t=50, b=20))
     return fig
 
-
 st.set_page_config(
     page_title="就业形势分析看板",
     page_icon="📊",
@@ -62,7 +57,7 @@ st.set_page_config(
 df, alerts, coef = load_data()
 
 st.title("基于网络招聘信息的就业形势分析看板")
-st.caption("数据基础：51job 1万条增强样本，含岗位类别、行业类别、工作地点、技能关键词、福利关键词、预警结果和薪资影响因素分析。")
+st.caption("数据源：51job 1万条增强样本，含岗位类别、行业类别、工作地点、技能关键词、福利关键词、预警结果和薪资影响因素分析。")
 
 with st.sidebar:
     st.header("筛选条件")
@@ -83,19 +78,19 @@ with st.sidebar:
     )
     selected_locations = st.multiselect("工作地点", location_options, default=[])
 
-filtered = df.copy()
-filtered = filtered[filtered["发布年份"].fillna(-1).astype(int).isin(selected_years)]
-if selected_roles:
-    filtered = filtered[filtered["岗位类别"].isin(selected_roles)]
-if selected_industries:
-    filtered = filtered[filtered["行业类别"].isin(selected_industries)]
-filtered = filtered[
-    filtered["平均薪资"].fillna(0).between(salary_range[0], salary_range[1], inclusive="both")
-]
-if selected_locations:
-    filtered = filtered[filtered["工作地点"].isin(selected_locations)]
+    filtered = df.copy()
+    filtered = filtered[filtered["发布年份"].fillna(-1).astype(int).isin(selected_years)]
+    if selected_roles:
+        filtered = filtered[filtered["岗位类别"].isin(selected_roles)]
+    if selected_industries:
+        filtered = filtered[filtered["行业类别"].isin(selected_industries)]
+    filtered = filtered[
+        filtered["平均薪资"].fillna(0).between(salary_range[0], salary_range[1], inclusive="both")
+    ]
+    if selected_locations:
+        filtered = filtered[filtered["工作地点"].isin(selected_locations)]
 
-valid_salary = filtered["平均薪资"].dropna()
+    valid_salary = filtered["平均薪资"].dropna()
 
 col1, col2, col3, col4 = st.columns(4)
 col1.metric("当前样本数", f"{len(filtered):,}")
@@ -106,20 +101,18 @@ col4.metric("预警条数", f"{len(alerts):,}")
 st.subheader("一、招聘趋势")
 monthly = (
     filtered.groupby("年月", dropna=False)
-    .agg(招聘数量=("jobId", "count"), 平均薪资=("平均薪资", "mean"))
+    .agg(招聘数量=("jobid", "count"), 平均薪资=("平均薪资", "mean"))
     .reset_index()
     .sort_values("年月")
 )
 trend = go.Figure()
-trend.add_trace(go.Scatter(x=monthly["年月"], y=monthly["招聘数量"], name="招聘数量", mode="lines+markers"))
-trend.add_trace(
-    go.Scatter(
-        x=monthly["年月"],
-        y=monthly["平均薪资"],
-        name="平均薪资",
-        mode="lines+markers",
-        yaxis="y2",
-    )
+trend.add_scatter(x=monthly["年月"], y=monthly["招聘数量"], name="招聘数量", mode="lines+markers")
+trend.add_scatter(
+    x=monthly["年月"],
+    y=monthly["平均薪资"],
+    name="平均薪资",
+    mode="lines+markers",
+    yaxis="y2",
 )
 trend.update_layout(
     title="月度招聘数量与平均薪资趋势",
@@ -129,7 +122,7 @@ trend.update_layout(
     legend=dict(orientation="h"),
     margin=dict(l=20, r=20, t=50, b=20),
 )
-st.plotly_chart(trend, use_container_width=True)
+st.plotly_chart(trend, width="stretch")
 
 left, right = st.columns(2)
 with left:
@@ -138,25 +131,26 @@ with left:
     )
     fig_role = px.bar(role_top, x="数量", y="岗位类别", orientation="h", title="岗位类别分布 Top10")
     fig_role.update_layout(yaxis=dict(categoryorder="total ascending"))
-    st.plotly_chart(fig_role, use_container_width=True)
+    st.plotly_chart(fig_role, width="stretch")
+
 with right:
     edu_top = (
         filtered["学历要求"].fillna("未知").value_counts().head(10).rename_axis("学历要求").reset_index(name="数量")
     )
     fig_edu = px.bar(edu_top, x="学历要求", y="数量", title="学历要求分布")
-    st.plotly_chart(fig_edu, use_container_width=True)
+    st.plotly_chart(fig_edu, width="stretch")
 
 st.subheader("二、结构分析")
 heat_col1, heat_col2 = st.columns(2)
 with heat_col1:
     st.plotly_chart(
         make_heatmap(filtered, "岗位类别", "学历要求", "岗位类别 × 学历要求"),
-        use_container_width=True,
+        width="stretch",
     )
 with heat_col2:
     st.plotly_chart(
         make_heatmap(filtered, "岗位类别", "工作经验要求", "岗位类别 × 工作经验要求"),
-        use_container_width=True,
+        width="stretch",
     )
 
 st.subheader("三、薪资分析")
@@ -168,13 +162,13 @@ with sal_col1:
         nbins=30,
         title="平均薪资分布",
     )
-    st.plotly_chart(hist, use_container_width=True)
+    st.plotly_chart(hist, width="stretch")
 with sal_col2:
     box_df = filtered[filtered["岗位类别"].isin(filtered["岗位类别"].value_counts().head(8).index)]
     box_df = box_df[box_df["平均薪资"].notna() & (box_df["平均薪资"] <= box_df["平均薪资"].quantile(0.99))]
     box = px.box(box_df, x="岗位类别", y="平均薪资", title="不同岗位类别薪资分布")
     box.update_layout(xaxis_tickangle=-25)
-    st.plotly_chart(box, use_container_width=True)
+    st.plotly_chart(box, width="stretch")
 
 scatter = px.scatter(
     filtered[filtered["平均薪资"].notna()],
@@ -184,13 +178,13 @@ scatter = px.scatter(
     title="技能数量与平均薪资关系",
     opacity=0.55,
 )
-st.plotly_chart(scatter, use_container_width=True)
+st.plotly_chart(scatter, width="stretch")
 
 st.subheader("四、预警结果")
 alert_summary = alerts["预警类型"].value_counts().rename_axis("预警类型").reset_index(name="数量")
 alert_bar = px.bar(alert_summary, x="预警类型", y="数量", title="预警类型分布")
-st.plotly_chart(alert_bar, use_container_width=True)
-st.dataframe(alerts, use_container_width=True, hide_index=True)
+st.plotly_chart(alert_bar, width="stretch")
+st.dataframe(alerts, width="stretch", hide_index=True)
 
 st.subheader("五、薪资影响因素")
 coef_show = coef.sort_values("影响强度排序").head(15)
@@ -202,7 +196,4 @@ coef_bar = px.bar(
     orientation="h",
     title="薪资影响因素 Top15",
 )
-coef_bar.update_layout(yaxis=dict(categoryorder="total ascending"))
-st.plotly_chart(coef_bar, use_container_width=True)
-st.dataframe(coef_show, use_container_width=True, hide_index=True)
-
+st.dataframe(coef_show, width="stretch", hide_index=True)
