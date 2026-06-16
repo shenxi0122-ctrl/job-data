@@ -99,11 +99,9 @@ col3.metric("平均薪资中位数", f"{valid_salary.median():,.0f}" if not vali
 col4.metric("预警条数", f"{len(alerts):,}")
 
 st.subheader("一、招聘趋势")
-# 彻底兼容新版Pandas 2.2+ 绝对不报错写法
-monthly_df = filtered.groupby("年月", dropna=False).agg(
-    招聘数量=("jobid", "count"),
-    平均薪资=("平均薪资", "mean")
-).reset_index()
+monthly_df = filtered.groupby("年月", dropna=False)[["jobid", "平均薪资"]].agg({"jobid":"count","平均薪资":"mean"})
+monthly_df = monthly_df.reset_index()
+monthly_df.rename(columns={"jobid": "招聘数量"}, inplace=True)
 monthly_df = monthly_df.sort_values("年月")
 
 trend = go.Figure()
