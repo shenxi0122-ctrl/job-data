@@ -1,4 +1,4 @@
-# -*- coding: utf‑8 -*-
+# -*- coding: utf-8 -*-
 from __future__ import annotations
 
 from pathlib import Path
@@ -15,9 +15,9 @@ COEF_FILE = BASE_DIR / "output" / "salary_factor_coefficients.csv"
 
 @st.cache_data
 def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    df = pd.read_csv(DATA_FILE, encoding="utf‑8‑sig")
-    alerts = pd.read_csv(ALERT_FILE, encoding="utf‑8‑sig")
-    coef = pd.read_csv(COEF_FILE, encoding="utf‑8‑sig")
+    df = pd.read_csv(DATA_FILE, encoding="utf-8-sig")
+    alerts = pd.read_csv(ALERT_FILE, encoding="utf-8-sig")
+    coef = pd.read_csv(COEF_FILE, encoding="utf-8-sig")
 
     df["发布时间"] = pd.to_datetime(df["发布时间"], errors="coerce")
     df["年月"] = df["发布时间"].dt.strftime("%Y‑%m")
